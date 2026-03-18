@@ -1,0 +1,41 @@
+{
+  "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PELICAN PANEL - PTERODACTYL.IO",
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "exported_at": "2026-03-18T00:00:00+00:00",
+  "name": "TS Website",
+  "author": "you@example.com",
+  "description": "Runs the Wruczek ts-website (TypeScript Node.js web app)",
+  "features": null,
+  "docker_images": {
+    "ghcr.io/parkervcp/yolks:nodejs_18": "NodeJS 18"
+  },
+  "file_denylist": [],
+  "startup": "if [ -d .git ]; then git pull; fi; if [ ! -d node_modules ]; then npm install; fi; npm run build || true; npm start",
+  "config": {
+    "files": "{}",
+    "startup": "{\n    \"done\": \"listening\"\n}",
+    "logs": "{}",
+    "stop": "CTRL+C"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\n# Install dependencies\napt update\napt install -y git\n\n# Clone repo\nif [ -z \"$REPO_URL\" ]; then\n  echo \"No repo URL provided\"\n  exit 1\nfi\n\ngit clone $REPO_URL /mnt/server\ncd /mnt/server\n\n# Install node deps\nnpm install\n\n# Build project (if needed)\nnpm run build || true\n\n# Done\necho \"Installation completed\"",
+      "container": "ghcr.io/parkervcp/installers:nodejs",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Git Repository",
+      "description": "Git repository to install",
+      "env_variable": "REPO_URL",
+      "default_value": "https://github.com/Wruczek/ts-website.git",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string"
+    }
+  ]
+}
