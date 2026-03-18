@@ -1,28 +1,25 @@
 {
-  "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PELICAN PANEL - PTERODACTYL.IO",
+  "_comment": "Pelican Egg - TS Website (Wruczek)",
   "meta": {
-    "version": "PTDL_v2",
-    "update_url": null
+    "version": "PTDL_v2"
   },
-  "exported_at": "2026-03-18T00:00:00+00:00",
   "name": "TS Website",
-  "author": "you@example.com",
-  "description": "Runs the Wruczek ts-website (TypeScript Node.js web app)",
-  "features": null,
+  "author": "yourname",
+  "description": "Runs the Wruczek ts-website (TypeScript Node.js app)",
   "docker_images": {
-    "ghcr.io/parkervcp/yolks:nodejs_18": "NodeJS 18"
+    "ghcr.io/parkervcp/yolks:nodejs_18": "NodeJS 18 (recommended)"
   },
   "file_denylist": [],
-  "startup": "if [ -d .git ]; then git pull; fi; if [ ! -d node_modules ]; then npm install; fi; npm run build || true; npm start",
+  "startup": "if [ -d .git ]; then git pull; fi; npm install --no-audit --no-fund; npm run build || true; npm start",
   "config": {
     "files": "{}",
-    "startup": "{\n    \"done\": \"listening\"\n}",
+    "startup": "{\n    \"done\": \"Server started\"\n}",
     "logs": "{}",
     "stop": "CTRL+C"
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\n# Install dependencies\napt update\napt install -y git\n\n# Clone repo\nif [ -z \"$REPO_URL\" ]; then\n  echo \"No repo URL provided\"\n  exit 1\nfi\n\ngit clone $REPO_URL /mnt/server\ncd /mnt/server\n\n# Install node deps\nnpm install\n\n# Build project (if needed)\nnpm run build || true\n\n# Done\necho \"Installation completed\"",
+      "script": "#!/bin/bash\nset -e\n\napt update\napt install -y git\n\ncd /mnt/server\n\n# Clean directory (important!)\nrm -rf ./* || true\n\n# Clone repo\ngit clone $REPO_URL .\n\n# Install dependencies\nnpm install --no-audit --no-fund\n\n# Build (optional)\nnpm run build || true\n\n# Mark installation complete\necho \"Server started\"",
       "container": "ghcr.io/parkervcp/installers:nodejs",
       "entrypoint": "bash"
     }
