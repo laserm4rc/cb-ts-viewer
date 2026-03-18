@@ -1,38 +1,155 @@
 {
-  "_comment": "Pelican Egg - TS Website (Wruczek)",
+  "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PELICAN PANEL - PTERODACTYL FORK",
   "meta": {
-    "version": "PTDL_v2"
+    "version": "PTDL_v2",
+    "update_url": null
   },
-  "name": "TS Website",
-  "author": "yourname",
-  "description": "Runs the Wruczek ts-website (TypeScript Node.js app)",
+  "exported_at": "2026-03-18T00:00:00+00:00",
+  "name": "TS-Website",
+  "author": "admin@example.com",
+  "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "description": "A feature-rich website for your TeamSpeak 3 server. Includes news page, dynamic server status, server viewer, group assigner, ban list, rules, FAQ and more. Built with PHP and MySQL. Original project by Wruczek: https://github.com/Wruczek/ts-website",
+  "features": [
+    "eula"
+  ],
   "docker_images": {
-    "ghcr.io/parkervcp/yolks:nodejs_18": "NodeJS 18 (recommended)"
+    "ghcr.io/parkervcp/yolks:php_7.4": "ghcr.io/parkervcp/yolks:php_7.4"
   },
   "file_denylist": [],
-  "startup": "if [ -d .git ]; then git pull; fi; npm install --no-audit --no-fund; npm run build || true; npm start",
+  "startup": "[ -d /home/container/public ] || (cd /home/container && wget -q $(curl -s https://api.github.com/repos/Wruczek/ts-website/releases/latest | grep 'browser_download_url.*zip' | cut -d '\"' -f 4) -O ts-website.zip && unzip -q ts-website.zip && mv ts-website/* . && rmdir ts-website && rm ts-website.zip); php -S 0.0.0.0:{{SERVER_PORT}} -t /home/container/public /home/container/public/index.php",
   "config": {
     "files": "{}",
-    "startup": "{\n    \"done\": \"Server started\"\n}",
+    "startup": "{\r\n    \"done\": \"Development Server (http\"\r\n}",
     "logs": "{}",
-    "stop": "CTRL+C"
+    "stop": "^C"
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\nset -e\n\napt update\napt install -y git\n\ncd /mnt/server\n\n# Clean directory (important!)\nrm -rf ./* || true\n\n# Clone repo\ngit clone $REPO_URL .\n\n# Install dependencies\nnpm install --no-audit --no-fund\n\n# Build (optional)\nnpm run build || true\n\n# Mark installation complete\necho \"Server started\"",
-      "container": "ghcr.io/parkervcp/installers:nodejs",
+      "script": "#!/bin/bash\r\n# TS-Website Installer\r\napt-get update -y\r\napt-get install -y curl wget unzip php7.4 php7.4-mbstring php7.4-json php7.4-mysql php7.4-curl php7.4-pdo php7.4-cli\r\n\r\ncd /mnt/server\r\n\r\n# Download latest release\r\necho \"Fetching latest ts-website release...\"\r\nLATEST_URL=$(curl -s https://api.github.com/repos/Wruczek/ts-website/releases/latest | grep 'browser_download_url.*zip' | cut -d '\"' -f 4)\r\n\r\nif [ -z \"$LATEST_URL\" ]; then\r\n  echo \"Could not fetch latest release URL. Falling back to direct download.\"\r\n  wget -q https://github.com/Wruczek/ts-website/archive/refs/heads/2.0.zip -O ts-website.zip\r\n  unzip -q ts-website.zip\r\n  mv ts-website-2.0/* .\r\n  rmdir ts-website-2.0\r\nelse\r\n  wget -q \"$LATEST_URL\" -O ts-website.zip\r\n  unzip -q ts-website.zip\r\n  # Move files if extracted into a subfolder\r\n  if [ -d \"ts-website\" ]; then\r\n    mv ts-website/* .\r\n    rmdir ts-website\r\n  fi\r\nfi\r\n\r\nrm -f ts-website.zip\r\n\r\n# Set permissions\r\nchown -R container:container /mnt/server\r\nchmod -R 755 /mnt/server\r\n\r\necho \"Installation complete!\"",
+      "container": "ghcr.io/parkervcp/yolks:php_7.4",
       "entrypoint": "bash"
     }
   },
   "variables": [
     {
-      "name": "Git Repository",
-      "description": "Git repository to install",
-      "env_variable": "REPO_URL",
-      "default_value": "https://github.com/Wruczek/ts-website.git",
+      "name": "Server Port",
+      "description": "The port the PHP built-in web server will listen on.",
+      "env_variable": "SERVER_PORT",
+      "default_value": "80",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "required|numeric|between:1,65535",
+      "field_type": "text"
+    },
+    {
+      "name": "TeamSpeak Host",
+      "description": "The IP address or hostname of your TeamSpeak 3 server.",
+      "env_variable": "TS_HOST",
+      "default_value": "localhost",
       "user_viewable": true,
       "user_editable": true,
-      "rules": "required|string"
+      "rules": "required|string|max:191",
+      "field_type": "text"
+    },
+    {
+      "name": "TeamSpeak Server Port",
+      "description": "The voice port of your TeamSpeak 3 server (default: 9987).",
+      "env_variable": "TS_SERVER_PORT",
+      "default_value": "9987",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|numeric|between:1,65535",
+      "field_type": "text"
+    },
+    {
+      "name": "TeamSpeak Query Port",
+      "description": "The ServerQuery (raw query) port of your TeamSpeak 3 server (default: 10011).",
+      "env_variable": "TS_QUERY_PORT",
+      "default_value": "10011",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|numeric|between:1,65535",
+      "field_type": "text"
+    },
+    {
+      "name": "TeamSpeak Query Login",
+      "description": "The ServerQuery login name (usually 'serveradmin').",
+      "env_variable": "TS_LOGIN",
+      "default_value": "serveradmin",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:191",
+      "field_type": "text"
+    },
+    {
+      "name": "TeamSpeak Query Password",
+      "description": "The ServerQuery password for your TeamSpeak 3 server.",
+      "env_variable": "TS_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:191",
+      "field_type": "text"
+    },
+    {
+      "name": "MySQL Host",
+      "description": "Hostname or IP address of the MySQL/MariaDB server.",
+      "env_variable": "DB_HOST",
+      "default_value": "localhost",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:191",
+      "field_type": "text"
+    },
+    {
+      "name": "MySQL Port",
+      "description": "Port of the MySQL/MariaDB server (default: 3306).",
+      "env_variable": "DB_PORT",
+      "default_value": "3306",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|numeric|between:1,65535",
+      "field_type": "text"
+    },
+    {
+      "name": "MySQL Database Name",
+      "description": "Name of the MySQL database to use for ts-website.",
+      "env_variable": "DB_NAME",
+      "default_value": "tswebsite",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:191",
+      "field_type": "text"
+    },
+    {
+      "name": "MySQL Username",
+      "description": "Username for connecting to the MySQL database.",
+      "env_variable": "DB_USER",
+      "default_value": "tswebsite",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:191",
+      "field_type": "text"
+    },
+    {
+      "name": "MySQL Password",
+      "description": "Password for the MySQL database user.",
+      "env_variable": "DB_PASSWORD",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:191",
+      "field_type": "text"
+    },
+    {
+      "name": "Display IP / Domain",
+      "description": "The IP or domain shown to users for connecting to your TeamSpeak server (e.g. ts.example.com).",
+      "env_variable": "TS_DISPLAY_IP",
+      "default_value": "ts.example.com",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|max:191",
+      "field_type": "text"
     }
   ]
 }
